@@ -1,4 +1,5 @@
 ﻿using DearlershipAI.API;
+using DearlershipAI.API.Services.UseCases.Cars.Search;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +13,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.Configure<RouteOptions>(options => options.LowercaseUrls = true);
 
 builder.Services.AddInjection(builder.Configuration);
+builder.Services.AddScoped<SearchCarUseCase>();
 
 var app = builder.Build();
 

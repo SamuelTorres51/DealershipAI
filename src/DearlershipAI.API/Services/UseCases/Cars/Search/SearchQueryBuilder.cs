@@ -5,10 +5,10 @@ using Microsoft.EntityFrameworkCore;
 namespace DearlershipAI.API.Services.UseCases.Cars.Search;
 
 public class SearchQueryBuilder {
-    private readonly SearchCarFilters _filters;
+    private readonly SearchCarFilters _filters; 
 
-    public SearchQueryBuilder(SearchCarFilters filters) {
-        _filters = filters;
+    public SearchQueryBuilder(SearchCarFilters filters) { 
+        _filters = filters; 
     }
 
     public IQueryable<Car> BuildQuery(IQueryable<Car> query, SearchCarFilters filters) {
@@ -23,6 +23,7 @@ public class SearchQueryBuilder {
         if (!string.IsNullOrEmpty(filters.Version)) {
             query = query.Where(c => EF.Functions.Like(c.Version, $"%{filters.Version}%"));
         }
+
 
         return query;
     }

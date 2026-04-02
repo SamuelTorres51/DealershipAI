@@ -8,16 +8,16 @@ using System.Text.Json;
 
 namespace DearlershipAI.API.Services.UseCases.Cars.Search;
 
-public class SearchCarUseCase {
-    private readonly ICarWriteOnlyRepository _repository;
+public class SearchCarUseCase : ISearchCarUseCase {
+    private readonly ICarReadOnlyRepository _repository;
     private readonly IConfiguration _configuration;
 
-    public SearchCarUseCase(ICarWriteOnlyRepository repository, IConfiguration configuration) {
+    public SearchCarUseCase(ICarReadOnlyRepository repository, IConfiguration configuration) {
         _repository = repository;
         _configuration = configuration;
     }
 
-    public async Task<SearchCarFilters?> Execute(RequestSearchCarJson request) {
+    public async Task<ResponseCarsJson?> Execute(RequestSearchCarJson request) {
         var API_KEY = _configuration["ConnectionStrings:API_KEY"];
         var client = new Client(apiKey: API_KEY);
         var userMessage = request.Search;
@@ -68,23 +68,30 @@ public class SearchCarUseCase {
         };
 
         var response = await client.Models.GenerateContentAsync(
-            model: "gemini-3.1-flash-lite", contents: prompt, config: config);
+            model: "gemini-3.1-flash-lite-preview", contents: prompt, config: config);
 
         var text = response.Text?.Trim();
+
+        SearchCarFilters? filters;
 
         if (string.IsNullOrWhiteSpace(text)) {
             return null;
         }
 
         try {
-            var filters = JsonSerializer.Deserialize<SearchCarFilters>(text, new JsonSerializerOptions {
+            filters = JsonSerializer.Deserialize<SearchCarFilters>(text, new JsonSerializerOptions {
                 PropertyNameCaseInsensitive = true
             });
-
-            return filters;
         } catch {
             
             return null;
         }
+
+        var cars = await _repository.Search(filters!);
+        var final = new ResponseCarsJson {
+            Cars = cars
+        };
+
+        return final;
     }
 }
