@@ -3,7 +3,7 @@ using DearlershipAI.API.Models.Repositories.Cars;
 using DearlershipAI.API.Repositories.DataAccess;
 using DearlershipAI.API.Repositories.DataAccess.Repositories;
 using Microsoft.EntityFrameworkCore;
-using AutoMapper;
+using DearlershipAI.API.Services.AutoMapper;
 
 namespace DearlershipAI.API;
 
