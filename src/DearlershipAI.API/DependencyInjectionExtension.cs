@@ -4,6 +4,7 @@ using DearlershipAI.API.Repositories.DataAccess;
 using DearlershipAI.API.Repositories.DataAccess.Repositories;
 using Microsoft.EntityFrameworkCore;
 using DearlershipAI.API.Services.AutoMapper;
+using DearlershipAI.API.Services.UseCases.Cars.Create;
 
 namespace DearlershipAI.API;
 
@@ -12,6 +13,7 @@ public static class DependencyInjectionExtension {
         AddRepositories(services);
         AddDbContext(services, configuration);
         AddAutoMapper(services);
+        AddUseCases(services);
     }
 
     private static void AddRepositories(IServiceCollection services) {
@@ -30,5 +32,8 @@ public static class DependencyInjectionExtension {
         services.AddAutoMapper(cfg => { }, typeof(AutoMapping));
     }
 
+    private static void AddUseCases(IServiceCollection services) {
+        services.AddScoped<ICreateCarUseCase, CreateCarUseCase>();
+    }
 
 }

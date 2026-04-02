@@ -6,7 +6,7 @@ using DearlershipAI.API.Models.Repositories.Cars;
 
 namespace DearlershipAI.API.Services.UseCases.Cars.Create;
 
-public class CreateCarUseCase {
+public class CreateCarUseCase : ICreateCarUseCase{
     private readonly ICarWriteOnlyRepository _repository;
     private readonly IMapper _mapper;
     private readonly IUnityOfWork _unityOfWork;

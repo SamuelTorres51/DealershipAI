@@ -1,5 +1,4 @@
 ﻿using DearlershipAI.API.Models.DTOs.Requests;
-using DearlershipAI.API.Models.Entities;
 using FluentValidation;
 
 namespace DearlershipAI.API.Services.UseCases.Cars;
