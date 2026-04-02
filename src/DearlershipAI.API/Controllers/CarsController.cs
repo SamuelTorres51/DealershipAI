@@ -11,10 +11,18 @@ public class CarsController : ControllerBase {
     [HttpPost]
     [ProducesResponseType(typeof(Car), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> AddCar([FromBody] RequestCarJson request, [FromServices] ICreateCarUseCase useCase){
+    public async Task<IActionResult> AddCar([FromBody] RequestCarJson request, [FromServices] ICreateCarUseCase useCase) {
         var response = await useCase.Execute(request);
-        if(response == null) 
+        if (response == null)
             return BadRequest("Failed to create car.");
         return Created(string.Empty, response);
+    }
+
+    [HttpPost("search")]
+    public async Task<IActionResult> SearchCars([FromBody] RequestSearchCarJson request) {
+        var response = await useCase.Execute(request);
+        if (response == null)
+            return BadRequest("Failed to search cars.");
+        return Ok(response);
     }
 }
