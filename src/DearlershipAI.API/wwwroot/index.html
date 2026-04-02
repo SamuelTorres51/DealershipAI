@@ -1,0 +1,451 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DealershipAI - Chat</title>
+  <style>
+    :root {
+      --bg: #0b1220;
+      --panel: #111a2e;
+      --panel-2: #0f172a;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --accent: #60a5fa;
+      --border: rgba(255,255,255,0.10);
+      --danger: #f87171;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      background: radial-gradient(1200px 800px at 30% 10%, rgba(96,165,250,0.15), transparent 40%), var(--bg);
+      color: var(--text);
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px;
+      display: grid;
+      grid-template-columns: 1fr 420px;
+      gap: 16px;
+      height: 100vh;
+    }
+
+    @media (max-width: 980px) {
+      .container { grid-template-columns: 1fr; height: auto; }
+    }
+
+    .card {
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.30);
+    }
+
+    header {
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      background: rgba(17, 26, 46, 0.65);
+      backdrop-filter: blur(8px);
+    }
+
+    header h1 { font-size: 14px; margin: 0; font-weight: 650; letter-spacing: 0.2px; }
+    header .hint { font-size: 12px; color: var(--muted); }
+
+    .chat {
+      display: grid;
+      grid-template-rows: 1fr auto;
+      height: calc(100vh - 48px);
+    }
+
+    @media (max-width: 980px) {
+      .chat { height: 520px; }
+    }
+
+    .messages {
+      padding: 16px;
+      overflow: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background: rgba(15, 23, 42, 0.35);
+    }
+
+    .bubble {
+      max-width: 92%;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      line-height: 1.25rem;
+      white-space: pre-wrap;
+    }
+    .bubble.user {
+      align-self: flex-end;
+      background: rgba(96,165,250,0.18);
+      border-color: rgba(96,165,250,0.35);
+    }
+    .bubble.bot {
+      align-self: flex-start;
+      background: rgba(255,255,255,0.04);
+    }
+
+    .composer {
+      padding: 12px;
+      border-top: 1px solid var(--border);
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      background: rgba(17, 26, 46, 0.65);
+      backdrop-filter: blur(8px);
+    }
+
+    textarea {
+      resize: none;
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(0,0,0,0.18);
+      color: var(--text);
+      outline: none;
+      min-height: 56px;
+      max-height: 120px;
+    }
+
+    .message-tools {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(15, 23, 42, 0.22);
+    }
+
+    .tools-title {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .chip {
+      border: 1px solid rgba(255,255,255,0.16);
+      background: rgba(255,255,255,0.04);
+      color: var(--text);
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: transform 120ms ease, background 120ms ease, border-color 120ms ease;
+    }
+
+    .chip:hover {
+      transform: translateY(-1px);
+      background: rgba(96,165,250,0.12);
+      border-color: rgba(96,165,250,0.35);
+    }
+
+    button {
+      padding: 0 16px;
+      border-radius: 12px;
+      border: 1px solid rgba(96,165,250,0.5);
+      background: rgba(96,165,250,0.22);
+      color: var(--text);
+      cursor: pointer;
+      font-weight: 650;
+    }
+    button:disabled { opacity: 0.55; cursor: not-allowed; }
+
+    .results {
+      height: calc(100vh - 48px);
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+    @media (max-width: 980px) {
+      .results { height: auto; }
+    }
+
+    .summary {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .cars {
+      padding: 16px;
+      overflow: auto;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      align-content: start;
+      background: rgba(15, 23, 42, 0.25);
+    }
+
+    @media (max-width: 980px) {
+      .cars { grid-template-columns: 1fr; }
+    }
+
+    .car {
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.03);
+      border-radius: 14px;
+      padding: 12px;
+      display: grid;
+      gap: 6px;
+    }
+
+    .car .title {
+      font-weight: 700;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .car .meta {
+      color: var(--muted);
+      font-size: 12px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px 10px;
+    }
+
+    .pill {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.16);
+      background: rgba(0,0,0,0.15);
+      color: var(--muted);
+      align-self: start;
+      white-space: nowrap;
+    }
+
+    .error {
+      color: var(--danger);
+      font-size: 12px;
+      margin-top: 8px;
+      display: none;
+    }
+
+    .loading {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.18);
+      border-top-color: rgba(96,165,250,0.9);
+      animation: spin 0.8s linear infinite;
+      flex: 0 0 auto;
+    }
+
+    .loading-card {
+      border: 1px dashed rgba(255,255,255,0.18);
+      background: rgba(255,255,255,0.02);
+      border-radius: 14px;
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 92px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <section class="card results">
+      <header>
+        <h1>Resultados</h1>
+        <div class="hint">Organizado em cards</div>
+      </header>
+      <div id="summary" class="summary">Nenhuma busca realizada ainda.</div>
+      <div id="cars" class="cars"></div>
+    </section>
+
+    <section class="card chat">
+      <header>
+        <h1>Chat</h1>
+        <div class="hint">Dica: pressione Enter para enviar (Shift+Enter quebra linha)</div>
+      </header>
+
+      <div class="message-tools">
+        <div class="tools-title">Sugestões rápidas</div>
+        <div class="chips" id="chips">
+          <button class="chip" type="button" data-text="SUV até 120k">SUV até 120k</button>
+          <button class="chip" type="button" data-text="Onix 2020 automático">Onix 2020 automático</button>
+          <button class="chip" type="button" data-text="sedan econômico">sedan econômico</button>
+          <button class="chip" type="button" data-text="hatch até 60k">hatch até 60k</button>
+        </div>
+      </div>
+
+      <div id="messages" class="messages"></div>
+
+      <div class="composer">
+        <textarea id="input" placeholder="Digite sua mensagem..." rows="2"></textarea>
+        <button id="send">Enviar</button>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const messagesEl = document.getElementById('messages');
+    const inputEl = document.getElementById('input');
+    const sendBtn = document.getElementById('send');
+    const carsEl = document.getElementById('cars');
+    const summaryEl = document.getElementById('summary');
+    const chipsEl = document.getElementById('chips');
+
+    function setLoading(isLoading) {
+      if (isLoading) {
+        summaryEl.innerHTML = `<span class="loading"><span class="spinner" aria-hidden="true"></span>Buscando carros...</span>`;
+        carsEl.innerHTML = `<div class="loading-card"><span class="loading"><span class="spinner" aria-hidden="true"></span>Carregando resultados</span></div>`;
+      }
+    }
+
+    function addMessage(role, text) {
+      const div = document.createElement('div');
+      div.className = `bubble ${role}`;
+      div.textContent = text;
+      messagesEl.appendChild(div);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    function formatMoney(value) {
+      if (value === null || value === undefined) return '-';
+      const num = Number(value);
+      if (Number.isNaN(num)) return String(value);
+      return num.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+
+    function safe(v) {
+      if (v === null || v === undefined) return '-';
+      const s = String(v);
+      return s.length ? s : '-';
+    }
+
+    function renderCars(cars) {
+      carsEl.innerHTML = '';
+      const count = cars?.length ?? 0;
+      summaryEl.textContent = count
+        ? `${count} carro(s) encontrado(s).`
+        : 'Nenhum carro encontrado para a busca.';
+
+      (cars ?? []).forEach(c => {
+        const card = document.createElement('div');
+        card.className = 'car';
+
+        const title = document.createElement('div');
+        title.className = 'title';
+        const name = document.createElement('div');
+        name.textContent = `${safe(c.brand)} ${safe(c.model)}`.trim();
+        const year = document.createElement('span');
+        year.className = 'pill';
+        year.textContent = safe(c.year);
+        title.appendChild(name);
+        title.appendChild(year);
+
+        const meta = document.createElement('div');
+        meta.className = 'meta';
+        meta.innerHTML = `
+          <div><strong>Preço:</strong> ${formatMoney(c.price)}</div>
+          <div><strong>Ano:</strong> ${safe(c.year)}</div>
+          <div><strong>Versão:</strong> ${safe(c.version)}</div>
+          <div><strong>Km:</strong> ${safe(c.mileage)}</div>
+          <div><strong>Câmbio:</strong> ${safe(c.transmissao)}</div>
+          <div><strong>Combustível:</strong> ${safe(c.fuel)}</div>
+        `;
+
+        card.appendChild(title);
+        card.appendChild(meta);
+        carsEl.appendChild(card);
+      });
+    }
+
+    async function send() {
+      const text = inputEl.value.trim();
+      if (!text) return;
+
+      addMessage('user', text);
+      inputEl.value = '';
+
+      sendBtn.disabled = true;
+      inputEl.disabled = true;
+      setLoading(true);
+
+      try {
+        const res = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ search: text })
+        });
+
+        if (!res.ok) {
+          const errText = await res.text();
+          addMessage('bot', `Erro: ${errText}`);
+          renderCars([]);
+          return;
+        }
+
+        /** @type {{cars: any[]}} */
+        const data = await res.json();
+        const cars = data?.cars ?? [];
+
+        addMessage('bot', cars.length
+          ? `Encontrei ${cars.length} carro(s). Veja ao lado.`
+          : 'Não encontrei carros para essa busca.'
+        );
+
+        renderCars(cars);
+      } catch (e) {
+        addMessage('bot', `Erro de rede: ${e?.message ?? e}`);
+        renderCars([]);
+      } finally {
+        sendBtn.disabled = false;
+        inputEl.disabled = false;
+        inputEl.focus();
+      }
+    }
+
+    sendBtn.addEventListener('click', send);
+
+    chipsEl?.addEventListener('click', (ev) => {
+      const btn = ev.target?.closest?.('.chip');
+      if (!btn) return;
+      const text = btn.getAttribute('data-text') || btn.textContent || '';
+      inputEl.value = text.trim();
+      inputEl.focus();
+    });
+
+    inputEl.addEventListener('keydown', (ev) => {
+      if (ev.key === 'Enter' && !ev.shiftKey) {
+        ev.preventDefault();
+        send();
+      }
+    });
+
+    // Mensagem inicial
+    addMessage('bot', 'Olá! Me diga o que você procura e eu retorno os carros organizados.');
+    inputEl.focus();
+  </script>
+</body>
+</html>
